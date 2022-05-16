@@ -1,5 +1,9 @@
 package call
 
+import (
+	ncall "call/noncall"
+)
+
 var Flag bool
 
 // res is a resource which must be closed after using.
@@ -10,6 +14,10 @@ func newRes() *res {
 }
 
 func (r *res) close() {}
+
+func tmp() *ncall.Other {
+	return &ncall.Other{}
+}
 
 func test1() {
 	r := newRes() // want `NG`
@@ -230,7 +238,7 @@ func test27() [1]*res {
 
 func test28() interface{} {
 	r := newRes()
-	return []*res{0:r}
+	return []*res{0: r}
 }
 
 func test29() (*res, int) {

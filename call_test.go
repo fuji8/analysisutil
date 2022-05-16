@@ -24,7 +24,22 @@ func TestCall(t *testing.T) {
 }
 
 func callAnalyzerRun(pass *analysis.Pass) (interface{}, error) {
-	resTyp := analysisutil.TypeOf(pass, "call", "*res")
+	resTyp := analysisutil.TypeOf3(pass, "ncall", "Other")
+	if resTyp == nil {
+		return nil, errors.New("analyzer does not find ncall.Other type")
+	}
+
+	resTyp = analysisutil.TypeOf2(pass, "noncall", "Other")
+	if resTyp == nil {
+		return nil, errors.New("analyzer does not find noncall.Other type")
+	}
+
+	resTyp = analysisutil.TypeOf(pass, "call/noncall", "Other")
+	if resTyp == nil {
+		return nil, errors.New("analyzer does not find noncall.Other type")
+	}
+
+	resTyp = analysisutil.TypeOf(pass, "call", "*res")
 	if resTyp == nil {
 		return nil, errors.New("analyzer does not find *call.res type")
 	}

@@ -26,6 +26,18 @@ func ObjectOf(pass *analysis.Pass, pkg, name string) types.Object {
 	return pass.Pkg.Scope().Lookup(name)
 }
 
+// ObjectOf2 returns types.Object by given name in the package.
+func ObjectOf2(pass *analysis.Pass, pkg, name string) types.Object {
+	obj := LookupFromImportsPkg(pass.Pkg.Imports(), pkg, name)
+	if obj != nil {
+		return obj
+	}
+	if RemoveVendor(pass.Pkg.Name()) != RemoveVendor(pkg) {
+		return nil
+	}
+	return pass.Pkg.Scope().Lookup(name)
+}
+
 // TypeOf returns types.Type by given name in the package.
 // TypeOf accepts pointer types such as *T.
 func TypeOf(pass *analysis.Pass, pkg, name string) types.Type {
@@ -46,6 +58,58 @@ func TypeOf(pass *analysis.Pass, pkg, name string) types.Type {
 		return nil
 	}
 
+	return obj.Type()
+}
+
+// TypeOf2 returns types.Type by given name in the package.
+// TypeOf2 accepts pointer types such as *T.
+func TypeOf2(pass *analysis.Pass, pkg, name string) types.Type {
+	if name == "" {
+		return nil
+	}
+
+	if name[0] == '*' {
+		obj := TypeOf(pass, pkg, name[1:])
+		if obj == nil {
+			return nil
+		}
+		return types.NewPointer(obj)
+	}
+
+	obj := ObjectOf2(pass, pkg, name)
+	if obj == nil {
+		return nil
+	}
+
+	return obj.Type()
+}
+
+// TypeOf3 returns types.Type by given name in the package.
+// TypeOf3 accepts pointer types such as *T.
+func TypeOf3(pass *analysis.Pass, pkg, name string) types.Type {
+	if name == "" {
+		return nil
+	}
+
+	if name[0] == '*' {
+		obj := TypeOf(pass, pkg, name[1:])
+		if obj == nil {
+			return nil
+		}
+		return types.NewPointer(obj)
+	}
+
+	var obj types.Object
+	for i := 0; i < pass.Pkg.Scope().NumChildren(); i++ {
+		tpkg, ok := pass.Pkg.Scope().Child(i).Lookup(pkg).(*types.PkgName)
+		if !ok {
+			return nil
+		}
+		obj = tpkg.Imported().Scope().Lookup(name)
+		if obj != nil {
+			break
+		}
+	}
 	return obj.Type()
 }
 

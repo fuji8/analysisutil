@@ -28,6 +28,16 @@ func LookupFromImports(imports []*types.Package, path, name string) types.Object
 	return nil
 }
 
+// LookupFromImportsPkg finds an object from import paths.
+func LookupFromImportsPkg(imports []*types.Package, pkg, name string) types.Object {
+	for i := range imports {
+		if pkg == RemoveVendor(imports[i].Name()) {
+			return imports[i].Scope().Lookup(name)
+		}
+	}
+	return nil
+}
+
 // Imported returns true when the given pass imports the pkg.
 func Imported(pkgPath string, pass *analysis.Pass) bool {
 	fs := pass.Files
